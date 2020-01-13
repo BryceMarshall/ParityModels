@@ -3,9 +3,10 @@ from django.db.models import Model
 from django.template.base import logger
 from django.utils import timezone
 
-CONTROL_TYPES = {"switch": ("off", "on"),
-                 "thermostat": ('off', 'cool', 'heat', 'fan-on', 'auto')
-                 }
+CONTROL_TYPES = {
+    "switch": ("off", "on"),
+    "thermostat": ('off', 'cool', 'heat', 'fan-on', 'auto')
+}
 
 SENSOR_TYPES = {"indoor_temperature": (-40, 40)}
 
@@ -13,10 +14,16 @@ SENSOR_TYPES = {"indoor_temperature": (-40, 40)}
 class House(models.Model):
     address = models.CharField(max_length=80)
 
+    def __str__(self):
+        return self.address
+
 
 class Room(models.Model):
     house = models.ForeignKey(House, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.house.address + "-" + self.name
 
 
 def control_type_validator(control_type):
@@ -40,7 +47,7 @@ class Control(models.Model):
             logger.debug("No changes detected in control ".format(self))
 
     def __str__(self):
-        return "{} {} : State {}".format(self.room, self.control_type, self.state)
+        return "{} {} id-{}".format(self.room, self.control_type, self.id)
 
 
 class ControlState(models.Model):
@@ -74,7 +81,10 @@ class Sensor(models.Model):
             ss.save()
         else:
             self.value = self._last_value
-            logger.debug("No changes detected in sensor ".format(self))
+            logger.debug("No changes detected in sensor {}".format(self))
+
+    def __str__(self):
+        return "{} {} id-{}".format(self.room, self.sensor_type, self.id)
 
 
 class SensorState(models.Model):
