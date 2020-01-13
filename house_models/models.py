@@ -30,9 +30,18 @@ def control_type_validator(control_type):
     return control_type in CONTROL_TYPES
 
 
+def sensor_type_validator(sensor):
+    return sensor in SENSOR_TYPES
+
+
+def formatControlChoices(option_list):
+    return [(entry, entry) for entry in option_list.keys()]
+
+
 class Control(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    control_type = models.CharField(max_length=32, validators=[control_type_validator])
+    control_type = models.CharField(max_length=32, validators=[control_type_validator],
+                                    choices=formatControlChoices(CONTROL_TYPES))
     state = models.CharField(max_length=8)
     _last_state = None
 
@@ -59,22 +68,19 @@ class ControlState(models.Model):
         return "{} changed to state {} at {}".format(self.control, self.state, self.timestamp)
 
 
-def sensor_type_validator(sensor):
-    return sensor in SENSOR_TYPES
-
-
 class Sensor(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    sensor_type = models.CharField(max_length=32, validators=[sensor_type_validator])
+    sensor_type = models.CharField(max_length=32, validators=[sensor_type_validator],
+                                   choices=formatControlChoices(SENSOR_TYPES))
     value = models.IntegerField()  # Could go to float if higher precision needed
     _last_value = None
 
-    def valid_value(self):
+    def within_bounds(self):
         low, hi = SENSOR_TYPES[self.sensor_type]
         return low <= self.value < hi
 
     def save(self, *args, **kwargs):
-        if self.value is not self._last_value and self.valid_value():
+        if self.value is not self._last_value and self.within_bounds():
             super().save(*args, **kwargs)
             self._last_value = self.value
             ss = SensorState(sensor=self, value=self.value, timestamp=timezone.now())
