@@ -21,7 +21,26 @@ class ModelsTestCase(TestCase):
         Control.objects.create(room=room3, control_type='switch', state='off')
 
     def test_thermostat(self):
-        pass
+        thermostat = Control.objects.filter(control_type="thermostat").first()
+        valid_states = models.CONTROL_TYPES["thermostat"]
+
+        thermostat.state = "on"
+        thermostat.save() #invalid state
+
+        for state in valid_states:
+            thermostat.state = state
+            thermostat.save()
+
+        thermostat.state = "on"
+        thermostat.save() #invalid state
+
+        thermostat.state = "off"
+        thermostat.save()
+
+        control_states = ControlState.objects.filter(control=thermostat)
+        assert [ctrl_state.state for ctrl_state in control_states] == ["off"] + list(valid_states) + ["off"]
+
+
 
     def test_temperature_sensor(self):
         pass
