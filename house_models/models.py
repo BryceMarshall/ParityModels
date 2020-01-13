@@ -1,6 +1,7 @@
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
+from django.db.models import Model
+from django.template.base import logger
+from django.utils import timezone
 
 CONTROL_TYPES = {"switch": ("off", "on"),
                  "indoor_temperature": range(-40, 60),  # Example range for Celcius sensor
@@ -25,19 +26,17 @@ class Control(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     control_type = models.CharField(max_length=32, validators=[control_type_validator])
     state = models.CharField(max_length=8)
+    _last_state = None
 
-
-@receiver(pre_save, sender=Control)
-def control_handler(sender, instance=None, **kwargs):
-    if validateState(instance.state, instance.control_type):
-        print("validated")
-    else:
-        instance.state = CONTROL_TYPES[instance.control_type][0]
-        raise ValueError("Invalid state for control")
-
-
-def validateState(state, control_type=""):
-    return state in CONTROL_TYPES[control_type]
+    def save(self, *args, **kwargs):
+        if self.state is not self._last_state and self.state in CONTROL_TYPES[self.control_type]
+            super().save(*args, **kwargs)
+            self._last_state = self.state
+            cs = ControlState(control=self, state=self.state, timestamp=timezone.now())
+            cs.save()
+        else:
+            self.state = self._last_state
+            logger.debug("No changes detected in control ".format(self))
 
 
 class ControlState(models.Model):

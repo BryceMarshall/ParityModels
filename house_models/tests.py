@@ -1,10 +1,10 @@
 from django.test import TestCase
 
-from house_models.models import House, Room, Control
+from house_models.models import House, Room, Control, ControlState
 
 
 class ModelsTestCase(TestCase):
-    def set_up(self):
+    def setUp(self):
         house = House.objects.create(address='123 Example Drive')
 
         room1 = Room.objects.create(house=house, name='Kitchen')
@@ -30,11 +30,13 @@ class ModelsTestCase(TestCase):
         switch = Control.objects.first()
         switch.state = "on"
         switch.save()
+
         switch.state = "off"
         switch.save()
 
         switch.state = "halfway"
-        self.assertRaises(ValueError, switch.save)
-
-        print(switch.state)
+        switch.save()
         assert switch.state == 'off'
+
+        control_states = ControlState.objects.filter(control=switch)
+        assert [ctrl_state.state for ctrl_state in control_states] == ["off", "on", "off"]
