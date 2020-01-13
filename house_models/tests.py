@@ -44,12 +44,15 @@ class ModelsTestCase(TestCase):
 
 
     def test_temperature_sensor(self):
-        indoor_sensor = Control.objects.filter(control_type="indoor_temperature").first()
+        indoor_sensor = Sensor.objects.filter(sensor_type="indoor_temperature").first()
 
-        indoor_sensor.value = 32
+        indoor_sensor.value = 23
         indoor_sensor.save()
-
-        indoor_sensor.value = 34
+        indoor_sensor.value = -1000000
+        indoor_sensor.save()
+        print(indoor_sensor.value)
+        assert indoor_sensor.value == 23
+        indoor_sensor.value = 100000
         indoor_sensor.save()
 
 

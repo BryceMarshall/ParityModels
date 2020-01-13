@@ -67,7 +67,7 @@ class Sensor(models.Model):
         return low <= self.value < hi
 
     def save(self, *args, **kwargs):
-        if self.value is not self._last_value and self.valid_value:
+        if self.value is not self._last_value and self.valid_value():
             super().save(*args, **kwargs)
             self._last_value = self.value
             ss = SensorState(sensor=self, value=self.value, timestamp=timezone.now())
