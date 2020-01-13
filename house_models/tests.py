@@ -4,7 +4,7 @@ from house_models.models import House, Room, Control
 
 
 class ModelsTestCase(TestCase):
-    def setUp(self):
+    def set_up(self):
         house = House.objects.create(address='123 Example Drive')
 
         room1 = Room.objects.create(house=house, name='Kitchen')
@@ -20,13 +20,13 @@ class ModelsTestCase(TestCase):
 
         Control.objects.create(room=room3, control_type='switch', state='off')
 
-    def testThermostat(self):
+    def test_thermostat(self):
         pass
 
-    def testTemperatureSensor(self):
+    def test_temperature_sensor(self):
         pass
 
-    def testSwitch(self):
+    def test_switch(self):
         switch = Control.objects.first()
         switch.state = "on"
         switch.save()
@@ -38,5 +38,3 @@ class ModelsTestCase(TestCase):
 
         print(switch.state)
         assert switch.state == 'off'
-
-
