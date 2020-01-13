@@ -1,6 +1,7 @@
 from django.test import TestCase
 
-from house_models.models import House, Room, Control, ControlState
+from house_models import models
+from house_models.models import House, Room, Control, ControlState, Sensor
 
 
 class ModelsTestCase(TestCase):
@@ -15,7 +16,7 @@ class ModelsTestCase(TestCase):
         Control.objects.create(room=room1, control_type='switch', state='off')
 
         Control.objects.create(room=room2, control_type='switch', state='off')
-        Control.objects.create(room=room2, control_type='indoor_temperature', state=23)
+        Sensor.objects.create(room=room2, sensor_type='indoor_temperature', value=23)
         Control.objects.create(room=room2, control_type='thermostat', state='off')
 
         Control.objects.create(room=room3, control_type='switch', state='off')
@@ -43,7 +44,15 @@ class ModelsTestCase(TestCase):
 
 
     def test_temperature_sensor(self):
-        pass
+        indoor_sensor = Control.objects.filter(control_type="indoor_temperature").first()
+
+        indoor_sensor.value = 32
+        indoor_sensor.save()
+
+        indoor_sensor.value = 34
+        indoor_sensor.save()
+
+
 
     def test_switch(self):
         switch = Control.objects.first()
