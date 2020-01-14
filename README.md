@@ -1,4 +1,4 @@
-Assumptions:
+Notes:
 
 - Split Sensor apart from Control in order to store controls (inputs to system) seperately from sensors (data points)
 
